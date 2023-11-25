@@ -17,30 +17,52 @@ function fetchResponseByURL(url) {
   return fetch(url).then(res => res.json());
 }
 
-function fetchPeople() {
-  return fetchResponseByURL(`${BASE_URL}people`).then((json) => json.results);
-}
-
-function fetchFilmsForPerson(person) {
-  return person.films.map(fetchResponseByURL);
-}
-
-// /**
-//  * An AsyncIterator object that fetches each film
-//  * it yields the film before fetching the next film
-//  * @param person
-//  * @returns 
-//  */
-// function fetchFilmsForPerson(person) {
-//   return {
-//     async *[Symbol.asyncIterator]() {
-//       for (const film of person.films) {
-//         const result = await fetchResponseByURL(film)
-//         yield result;
-//       }
-//     }
-//   };
+// function fetchPeople() {
+//   return fetchResponseByURL(`${BASE_URL}people`).then((json) => json.results);
 // }
+
+/**
+ * An AsyncIterator object that fetches pages of people
+ * it yields the person before fetching the next page
+ * @returns 
+ */
+function fetchPeople() {
+  return {
+    async *[Symbol.asyncIterator]() {
+      let people = await fetchResponseByURL(`${BASE_URL}people`);
+      for(const person of people.results) {
+        yield person;
+      }
+      while(people.next) {
+        people = await fetchResponseByURL(people.next);
+        for(const person of people.results) {
+          yield person;
+        }
+      }
+    }
+  }
+}
+
+// function fetchFilmsForPerson(person) {
+//   return person.films.map(fetchResponseByURL);
+// }
+
+/**
+ * An AsyncIterator object that fetches each film
+ * it yields the film before fetching the next film
+ * @param person
+ * @returns 
+ */
+function fetchFilmsForPerson(person) {
+  return {
+    async *[Symbol.asyncIterator]() {
+      for (const film of person.films) {
+        const result = await fetchResponseByURL(film)
+        yield result;
+      }
+    }
+  };
+}
 
 const FilmType = new GraphQLObjectType({
   name: 'Film',

@@ -17,8 +17,4 @@ RUN addgroup --system graphql-yoga && \
 COPY dist/apps/graphql-yoga graphql-yoga
 RUN chown -R graphql-yoga:graphql-yoga .
 
-# You can remove this install step if you build with `--bundle` option.
-# The bundled output will include external dependencies.
-RUN npm --prefix graphql-yoga --omit=dev -f install
-
 CMD [ "node", "graphql-yoga" ]
