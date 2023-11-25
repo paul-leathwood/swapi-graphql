@@ -11,8 +11,8 @@
       "options": {
         "platform": "node",
         "outputPath": "dist/apps/apollo-server-4",
-        "format": ["cjs"],
-        "bundle": false,
+        "format": ["esm"],
+        "bundle": true,
         "main": "apps/apollo-server-4/src/main.ts",
         "tsConfig": "apps/apollo-server-4/tsconfig.app.json",
         "assets": ["apps/apollo-server-4/src/assets"],
