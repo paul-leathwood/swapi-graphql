@@ -1,4 +1,4 @@
-import { GraphQLList, GraphQLObjectType, GraphQLSchema, GraphQLString } from "graphql";
+import { GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLSchema, GraphQLString } from "graphql";
 
 const BASE_URL = 'https://swapi.dev/api/';
 
@@ -7,9 +7,28 @@ function fetchResponseByURL(url) {
 }
 
 function fetchPeople() {
-  return fetchResponseByURL(`${BASE_URL}people`).then((json) => json.results);
+  return {
+    async *[Symbol.asyncIterator]() {
+      let people = await fetchResponseByURL(`${BASE_URL}people`);
+      for(const person of people.results) {
+        yield person;
+      }
+      while(people.next) {
+        people = await fetchResponseByURL(people.next);
+        for(const person of people.results) {
+          yield person;
+        }
+      }
+    }
+  }
 }
 
+/**
+ * An AsyncIterator object that fetches each film
+ * it yields the film before fetching the next film
+ * @param person
+ * @returns 
+ */
 function fetchFilmsForPerson(person) {
   return {
     async *[Symbol.asyncIterator]() {
@@ -32,6 +51,13 @@ const PersonType = new GraphQLObjectType({
   name: 'Person',
   fields: {
     name: { type: GraphQLString },
+    height: { type: GraphQLInt },
+    mass: { type: GraphQLString },
+    hair_color: { type: GraphQLString },
+    skin_color: { type: GraphQLString },
+    eye_color: { type: GraphQLString },
+    birth_year: { type: GraphQLString },
+    gender: { type: GraphQLString },
     films: {
       type: new GraphQLList(FilmType),
       resolve: fetchFilmsForPerson

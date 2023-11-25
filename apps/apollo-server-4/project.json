@@ -45,7 +45,8 @@
       },
       "configurations": {
         "development": {
-          "buildTarget": "apollo-server-4:build:development"
+          "buildTarget": "apollo-server-4:build:development",
+          "port": 9230
         },
         "production": {
           "buildTarget": "apollo-server-4:build:production"

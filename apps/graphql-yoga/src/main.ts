@@ -12,7 +12,13 @@ const port = process.env.PORT ? Number(process.env.PORT) : 4000;
 const app = new Koa();
 const yoga = createYoga<Koa.ParameterizedContext>({
   schema,
-  plugins: [useDeferStream()]
+  graphqlEndpoint: '/',
+  cors: {
+    origin: ['http://localhost:3000','http://localhost:3001','http://localhost:4000','https://studio.apollographql.com']
+  },
+  plugins: [
+    useDeferStream(),
+  ]
 })
  
 const httpServer = http.createServer(yoga);
