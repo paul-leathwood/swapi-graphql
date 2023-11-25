@@ -10,10 +10,6 @@ function fetchPeople() {
   return fetchResponseByURL(`${BASE_URL}people`).then((json) => json.results);
 }
 
-// function fetchFilmsForPerson(person) {
-//   return person.films.map(fetchResponseByURL);
-// }
-
 function fetchFilmsForPerson(person) {
   return {
     async *[Symbol.asyncIterator]() {

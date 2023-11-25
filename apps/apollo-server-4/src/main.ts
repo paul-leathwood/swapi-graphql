@@ -7,7 +7,6 @@ import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHt
 import { koaMiddleware } from "@as-integrations/koa";
 
 import logger from '@graphql/util-logger';
-// import { typeDefs, resolvers } from "./resolvers";
 import { schema } from './schema';
 
 const host = process.env.HOST ?? 'localhost';
@@ -17,8 +16,6 @@ const app = new Koa();
 const httpServer = http.createServer(app.callback());
 
 const server = new ApolloServer({
-  // typeDefs,
-  // resolvers,
   schema,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 });

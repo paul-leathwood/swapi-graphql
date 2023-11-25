@@ -2,14 +2,18 @@
   "name": "@graphql/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "start": "nx run-many --target=serve"
+  },
   "private": true,
   "dependencies": {
     "@apollo/server": "^4.9.5",
     "@as-integrations/koa": "^1.1.1",
+    "@graphql-yoga/plugin-defer-stream": "^3.0.0",
     "@koa/cors": "^4.0.0",
     "axios": "^1.0.0",
     "graphql": "^16.8.1",
+    "graphql-yoga": "^5.0.0",
     "koa": "~2.14.1",
     "koa-bodyparser": "^4.4.1",
     "pino": "^8.16.2",
