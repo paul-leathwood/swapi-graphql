@@ -1,13 +1,13 @@
 import Koa from "koa";
 
-import { register as defaultRegister } from 'prom-client';
+import { Registry, register as defaultRegister } from 'prom-client';
 
-export function buildMetricsServer() {
+export function buildMetricsServer(register: Registry = defaultRegister) {
   const metricsMiddleware = async (ctx: any, next: any) => {
     if (ctx.request.path === '/metrics') {
       try {
-        ctx.header['Content-Type'] = defaultRegister.contentType;
-        ctx.body = await defaultRegister.metrics();
+        ctx.header['Content-Type'] = register.contentType;
+        ctx.body = await register.metrics();
       } catch (err) {
         ctx.status = 500;
       }
@@ -19,5 +19,5 @@ export function buildMetricsServer() {
 
   metricsApp.use(metricsMiddleware);
 
-  return { metricsApp, register: defaultRegister };
+  return { metricsApp, register };
 }

@@ -1,23 +1,28 @@
 import logger from '@graphql/util-logger';
 
+import { createTracingProvider } from './tracingProvider';
 import { buildMetricsServer } from './metricServer';
 import { buildGraphQLServer } from "./graphQLServer";
 import { schema } from './schema';
 import Redis from 'ioredis';
 
-type AppContext = {
-  user: string;
-}
-
 const { metricsApp, register } = buildMetricsServer();
+
+const { tracingProvider } = createTracingProvider();
+type AppContext = {
+  user?: string;
+}
 
 const { graphqlApp } = buildGraphQLServer<AppContext>({
   schema,
   options: {
     context: async (serverContext) => {
-      return {
-        user: serverContext.params.extensions.headers['authorization']
+      if (serverContext.params.extensions.headers) {
+        return {
+          user: serverContext.params.extensions.headers['authorization']
+        };
       }
+      return {};
     },
     cors: {
       origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:4000', 'https://studio.apollographql.com']
@@ -48,11 +53,18 @@ const { graphqlApp } = buildGraphQLServer<AppContext>({
       session: () => null, // global cache
       ttl: 500_000,
       cache: new Redis(),
+    },
+    tracing: {
+      tracingOptions: {
+        resolvers: true,
+        variables: true,
+        result: false,
+      },
+      tracingProvider,
     }
   },
 });
 
-// const host = process.env.HOST ?? 'localhost';
 const graphQLPort = process.env.PORT ? Number(process.env.PORT) : 4000;
 const metricsPort = process.env.METRICS_PORT ? Number(process.env.METRICS_PORT) : 9464;
 

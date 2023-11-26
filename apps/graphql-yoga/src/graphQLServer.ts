@@ -26,6 +26,9 @@ import type { Registry } from 'prom-client';
 import { useResponseCache } from '@graphql-yoga/plugin-response-cache'
 import { createRedisCache } from '@envelop/response-cache-redis'
 import type { Redis } from 'ioredis';
+import { useOpenTelemetry } from '@envelop/opentelemetry';
+import type { TracerProvider } from '@opentelemetry/api';
+import type { TracingOptions } from '@envelop/opentelemetry';
 
 interface ServerContext {
   // req: HttpRequest (you can't make changes with this part so best to hide the implementation)
@@ -43,11 +46,12 @@ type BaseContext = {};
 type ServerOptions<AppContext> = {
   schema: GraphQLSchema;
   options: {
-    context: (serverContext: ServerContext) => PromiseOrValue<AppContext>;
-    cors: { origin: string[] };
-    disableIntrospection: boolean;
-    enableGraphQLArmor: boolean;
-    logging: {
+    context?: (serverContext: ServerContext) => PromiseOrValue<AppContext>;
+    cors?: { origin: string[] };
+    disableIntrospection?: boolean;
+    enableGraphQLArmor?: boolean;
+    healthCheckEndpoint?: string;
+    logging?: {
       debug: (...args) => void;
       info: (...args) => void;
       warn: (...args) => void;
@@ -74,7 +78,10 @@ type ServerOptions<AppContext> = {
       ttl: number;
       cache?: Redis;
     };
-    tracing?: {}
+    tracing?: {
+      tracingOptions: TracingOptions;
+      tracingProvider?: TracerProvider;
+    }
   };
 };
 type YogaPlugin = {} | Plugin | Plugin<ServerContext & YogaInitialContext>;
@@ -117,12 +124,19 @@ export function buildGraphQLServer<AppContext extends BaseContext>(serverOptions
       cache,
     }));
   }
+  if (options.tracing) {
+    const { tracingOptions, tracingProvider } = options.tracing;
+    plugins.push(
+      useOpenTelemetry(tracingOptions, tracingProvider)
+    );
+  }
 
   const yoga = createYoga<ServerContext>({
     schema,
     batching: true,
     context: options.context,
     cors: options.cors,
+    healthCheckEndpoint: options.healthCheckEndpoint,
     graphiql: {
       subscriptionsProtocol: 'WS' // use WebSockets instead of SSE
     },
@@ -166,5 +180,6 @@ export function buildGraphQLServer<AppContext extends BaseContext>(serverOptions
     .addServerName(hostname(), {})
     .any('/*', yoga)
     .ws(yoga.graphqlEndpoint, wsHandler);
+
   return { graphqlApp };
 }
