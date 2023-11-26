@@ -5,7 +5,8 @@ import { App } from 'uWebSockets.js'
 import type { HttpRequest, HttpResponse } from 'uWebSockets.js'
 
 // GraphQL Server
-import { createYoga } from "graphql-yoga";
+import { createYoga, useReadinessCheck } from "graphql-yoga";
+import type { ReadinessCheckPluginOptions } from 'graphql-yoga/typings/plugins/use-readiness-check';
 import type { Plugin, PromiseOrValue, YogaInitialContext } from "graphql-yoga";
 
 // WebSocket Server
@@ -67,6 +68,7 @@ type ServerOptions<AppContext> = {
       skipIntrospection?: boolean;
       registry: Registry;
     };
+    readiness?: ReadinessCheckPluginOptions;
     responseCache?: {
       session: () => string;
       ttl: number;
@@ -97,6 +99,11 @@ export function buildGraphQLServer<AppContext extends BaseContext>(serverOptions
     plugins.push(
       usePrometheus(options.metrics)
     );
+  }
+  if (options.readiness) {
+    plugins.push(
+      useReadinessCheck(options.readiness)
+    )
   }
   if (options.responseCache) {
     const { session, ttl } = options.responseCache;

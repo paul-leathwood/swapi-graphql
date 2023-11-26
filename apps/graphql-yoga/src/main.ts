@@ -41,6 +41,9 @@ const { graphqlApp } = buildGraphQLServer<AppContext>({
       skipIntrospection: true,
       registry: register,
     },
+    readiness: {
+      check: () => { },
+    },
     responseCache: {
       session: () => null, // global cache
       ttl: 500_000,
