@@ -30,6 +30,7 @@ const { graphqlApp } = buildGraphQLServer<AppContext>({
     disableIntrospection: process.env.NODE_ENV === 'production',
     enableGraphQLArmor: process.env.NODE_ENV === 'production',
     logging: logger,
+    maskErrors: process.env.NODE_ENV === 'production',
     metrics: {
       // all optional, and by default, all set to false, please opt-in to the metrics you wish to get
       execute: true,

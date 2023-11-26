@@ -21,6 +21,7 @@ import { maxDirectivesPlugin } from '@escape.tech/graphql-armor-max-directives'
 import { maxTokensPlugin } from '@escape.tech/graphql-armor-max-tokens'
 import { useDeferStream } from '@graphql-yoga/plugin-defer-stream'
 import { useDisableIntrospection } from '@graphql-yoga/plugin-disable-introspection'
+import { useMaskedErrors } from '@envelop/core'
 import { usePrometheus } from '@envelop/prometheus'
 import type { Registry } from 'prom-client';
 import { useResponseCache } from '@graphql-yoga/plugin-response-cache'
@@ -57,6 +58,7 @@ type ServerOptions<AppContext> = {
       warn: (...args) => void;
       error: (...args) => void;
     };
+    maskErrors?: boolean;
     metrics?: {
       execute?: boolean;
       parse?: boolean;
@@ -102,15 +104,14 @@ export function buildGraphQLServer<AppContext extends BaseContext>(serverOptions
       maxAliasesPlugin(),
     );
   }
+  if (options.maskErrors) {
+    plugins.push(useMaskedErrors());
+  }
   if (options.metrics) {
-    plugins.push(
-      usePrometheus(options.metrics)
-    );
+    plugins.push(usePrometheus(options.metrics));
   }
   if (options.readiness) {
-    plugins.push(
-      useReadinessCheck(options.readiness)
-    )
+    plugins.push(useReadinessCheck(options.readiness));
   }
   if (options.responseCache) {
     const { session, ttl } = options.responseCache;
@@ -126,9 +127,7 @@ export function buildGraphQLServer<AppContext extends BaseContext>(serverOptions
   }
   if (options.tracing) {
     const { tracingOptions, tracingProvider } = options.tracing;
-    plugins.push(
-      useOpenTelemetry(tracingOptions, tracingProvider)
-    );
+    plugins.push(useOpenTelemetry(tracingOptions, tracingProvider));
   }
 
   const yoga = createYoga<ServerContext>({

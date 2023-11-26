@@ -10,6 +10,7 @@
   "dependencies": {
     "@apollo/server": "^4.9.5",
     "@as-integrations/koa": "^1.1.1",
+    "@envelop/core": "^5.0.0",
     "@envelop/opentelemetry": "^6.1.0",
     "@envelop/prometheus": "^9.1.0",
     "@envelop/response-cache-redis": "^4.1.0",
