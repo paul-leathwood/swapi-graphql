@@ -6,7 +6,7 @@ import type { HttpRequest, HttpResponse } from 'uWebSockets.js'
 
 // GraphQL Server
 import { createYoga } from "graphql-yoga";
-import type { PromiseOrValue } from "graphql-yoga";
+import type { Plugin, PromiseOrValue, YogaInitialContext } from "graphql-yoga";
 
 // WebSocket Server
 import { execute, ExecutionArgs, GraphQLSchema, subscribe } from 'graphql'
@@ -20,6 +20,8 @@ import { maxDirectivesPlugin } from '@escape.tech/graphql-armor-max-directives'
 import { maxTokensPlugin } from '@escape.tech/graphql-armor-max-tokens'
 import { useDeferStream } from '@graphql-yoga/plugin-defer-stream'
 import { useDisableIntrospection } from '@graphql-yoga/plugin-disable-introspection'
+import { usePrometheus } from '@envelop/prometheus'
+import type { Registry } from 'prom-client';
 import { useResponseCache } from '@graphql-yoga/plugin-response-cache'
 import { createRedisCache } from '@envelop/response-cache-redis'
 import type { Redis } from 'ioredis';
@@ -40,28 +42,45 @@ type BaseContext = {};
 type ServerOptions<AppContext> = {
   schema: GraphQLSchema;
   options: {
-    contextFn: (serverContext: ServerContext) => PromiseOrValue<AppContext>;
+    context: (serverContext: ServerContext) => PromiseOrValue<AppContext>;
     cors: { origin: string[] };
-    disableIntrospection: Boolean;
-    enableGraphQLArmor: Boolean;
+    disableIntrospection: boolean;
+    enableGraphQLArmor: boolean;
     logging: {
       debug: (...args) => void;
       info: (...args) => void;
       warn: (...args) => void;
       error: (...args) => void;
     };
-    responseCache: {
+    metrics?: {
+      execute?: boolean;
+      parse?: boolean;
+      validate?: boolean;
+      contextBuilding?: boolean;
+      deprecatedFields?: boolean;
+      errors?: boolean;
+      requestCount?: boolean; // requires `execute` to be true as well
+      requestSummary?: boolean; // requires `execute` to be true as well
+      requestTotalDuration?: boolean;
+      resolvers?: boolean; // requires "execute" to be `true` as well
+      resolversWhitelist?: string[];
+      skipIntrospection?: boolean;
+      registry: Registry;
+    };
+    responseCache?: {
       session: () => string;
       ttl: number;
       cache?: Redis;
     };
+    tracing?: {}
   };
 };
+type YogaPlugin = {} | Plugin | Plugin<ServerContext & YogaInitialContext>;
 
-export function buildServer<AppContext extends BaseContext>(serverOptions: ServerOptions<AppContext>) {
+export function buildGraphQLServer<AppContext extends BaseContext>(serverOptions: ServerOptions<AppContext>) {
   const { schema, options } = serverOptions;
 
-  const plugins = [useDeferStream()];
+  const plugins: (YogaPlugin)[] = [useDeferStream()];
   if (options.disableIntrospection) {
     plugins.push(useDisableIntrospection());
   }
@@ -72,6 +91,11 @@ export function buildServer<AppContext extends BaseContext>(serverOptions: Serve
       maxDepthPlugin(),
       maxDirectivesPlugin(),
       maxAliasesPlugin(),
+    );
+  }
+  if (options.metrics) {
+    plugins.push(
+      usePrometheus(options.metrics)
     );
   }
   if (options.responseCache) {
@@ -90,7 +114,7 @@ export function buildServer<AppContext extends BaseContext>(serverOptions: Serve
   const yoga = createYoga<ServerContext>({
     schema,
     batching: true,
-    context: options.contextFn,
+    context: options.context,
     cors: options.cors,
     graphiql: {
       subscriptionsProtocol: 'WS' // use WebSockets instead of SSE
@@ -131,9 +155,9 @@ export function buildServer<AppContext extends BaseContext>(serverOptions: Serve
     }
   })
 
-  const app = App()
+  const graphqlApp = App()
     .addServerName(hostname(), {})
     .any('/*', yoga)
     .ws(yoga.graphqlEndpoint, wsHandler);
-  return app
+  return { graphqlApp };
 }

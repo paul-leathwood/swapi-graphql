@@ -10,6 +10,7 @@
   "dependencies": {
     "@apollo/server": "^4.9.5",
     "@as-integrations/koa": "^1.1.1",
+    "@envelop/prometheus": "^9.1.0",
     "@envelop/response-cache-redis": "^4.1.0",
     "@escape.tech/graphql-armor-cost-limit": "^2.1.0",
     "@escape.tech/graphql-armor-max-aliases": "^2.2.0",
@@ -31,6 +32,7 @@
     "koa": "~2.14.1",
     "koa-bodyparser": "^4.4.1",
     "pino": "^8.16.2",
+    "prom-client": "^15.0.0",
     "tslib": "^2.3.0",
     "uWebSockets.js": "uNetworking/uWebSockets.js#v20.31.0",
     "ws": "^8.14.2"
