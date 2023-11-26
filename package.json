@@ -10,10 +10,17 @@
   "dependencies": {
     "@apollo/server": "^4.9.5",
     "@as-integrations/koa": "^1.1.1",
+    "@envelop/response-cache-redis": "^4.1.0",
+    "@escape.tech/graphql-armor-cost-limit": "^2.1.0",
+    "@escape.tech/graphql-armor-max-aliases": "^2.2.0",
+    "@escape.tech/graphql-armor-max-depth": "^2.2.0",
+    "@escape.tech/graphql-armor-max-directives": "^2.1.0",
+    "@escape.tech/graphql-armor-max-tokens": "^2.2.0",
     "@graphql-tools/utils": "^10.0.11",
     "@graphql-yoga/plugin-defer-stream": "^3.0.0",
     "@graphql-yoga/plugin-disable-introspection": "^2.0.0",
     "@graphql-yoga/plugin-jwt": "^2.0.0",
+    "@graphql-yoga/plugin-response-cache": "^3.1.0",
     "@graphql-yoga/redis-event-target": "^3.0.0",
     "@koa/cors": "^4.0.0",
     "axios": "^1.0.0",
@@ -25,6 +32,7 @@
     "koa-bodyparser": "^4.4.1",
     "pino": "^8.16.2",
     "tslib": "^2.3.0",
+    "uWebSockets.js": "uNetworking/uWebSockets.js#v20.31.0",
     "ws": "^8.14.2"
   },
   "devDependencies": {
