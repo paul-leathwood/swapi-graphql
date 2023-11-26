@@ -14,11 +14,7 @@ import { execute, ExecutionArgs, GraphQLSchema, subscribe } from 'graphql'
 import { makeBehavior } from 'graphql-ws/lib/use/uWebSockets'
 
 // Plugins
-import { costLimitPlugin } from '@escape.tech/graphql-armor-cost-limit'
-import { maxAliasesPlugin } from '@escape.tech/graphql-armor-max-aliases'
-import { maxDepthPlugin } from '@escape.tech/graphql-armor-max-depth'
-import { maxDirectivesPlugin } from '@escape.tech/graphql-armor-max-directives'
-import { maxTokensPlugin } from '@escape.tech/graphql-armor-max-tokens'
+import { EnvelopArmor } from '@escape.tech/graphql-armor';
 import { useDeferStream } from '@graphql-yoga/plugin-defer-stream'
 import { useDisableIntrospection } from '@graphql-yoga/plugin-disable-introspection'
 import { useMaskedErrors } from '@envelop/core'
@@ -45,90 +41,66 @@ interface ServerContext {
 
 type BaseContext = {};
 type ServerOptions<AppContext> = {
-  schema: GraphQLSchema;
-  options: {
-    context?: (serverContext: ServerContext) => PromiseOrValue<AppContext>;
-    cors?: { origin: string[] };
-    disableIntrospection?: boolean;
-    enableGraphQLArmor?: boolean;
-    healthCheckEndpoint?: string;
-    logging?: {
-      debug: (...args) => void;
-      info: (...args) => void;
-      warn: (...args) => void;
-      error: (...args) => void;
-    };
-    maskErrors?: boolean;
-    metrics?: {
-      execute?: boolean;
-      parse?: boolean;
-      validate?: boolean;
-      contextBuilding?: boolean;
-      deprecatedFields?: boolean;
-      errors?: boolean;
-      requestCount?: boolean; // requires `execute` to be true as well
-      requestSummary?: boolean; // requires `execute` to be true as well
-      requestTotalDuration?: boolean;
-      resolvers?: boolean; // requires "execute" to be `true` as well
-      resolversWhitelist?: string[];
-      skipIntrospection?: boolean;
-      registry: Registry;
-    };
-    readiness?: ReadinessCheckPluginOptions;
-    responseCache?: {
-      session: () => string;
-      ttl: number;
-      cache?: Redis;
-    };
-    tracing?: {
-      tracingOptions: TracingOptions;
-      tracingProvider?: TracerProvider;
-    }
+  context?: (serverContext: ServerContext) => PromiseOrValue<AppContext>;
+  cors?: { origin: string[] };
+  disableIntrospection?: boolean;
+  enableGraphQLArmor?: boolean;
+  healthCheckEndpoint?: string;
+  logging?: {
+    debug: (...args) => void;
+    info: (...args) => void;
+    warn: (...args) => void;
+    error: (...args) => void;
   };
+  maskErrors?: boolean;
+  metrics?: {
+    execute?: boolean;
+    parse?: boolean;
+    validate?: boolean;
+    contextBuilding?: boolean;
+    deprecatedFields?: boolean;
+    errors?: boolean;
+    requestCount?: boolean; // requires `execute` to be true as well
+    requestSummary?: boolean; // requires `execute` to be true as well
+    requestTotalDuration?: boolean;
+    resolvers?: boolean; // requires "execute" to be `true` as well
+    resolversWhitelist?: string[];
+    skipIntrospection?: boolean;
+    registry: Registry;
+  };
+  readiness?: ReadinessCheckPluginOptions;
+  responseCache?: {
+    session: () => string;
+    ttl: number;
+    cache?: Redis;
+  };
+  tracing?: {
+    tracingOptions: TracingOptions;
+    tracingProvider?: TracerProvider;
+  }
 };
 type YogaPlugin = {} | Plugin | Plugin<ServerContext & YogaInitialContext>;
 
-export function buildGraphQLServer<AppContext extends BaseContext>(serverOptions: ServerOptions<AppContext>) {
-  const { schema, options } = serverOptions;
-
-  const plugins: (YogaPlugin)[] = [useDeferStream()];
-  if (options.disableIntrospection) {
-    plugins.push(useDisableIntrospection());
-  }
-  if (options.enableGraphQLArmor) {
-    plugins.push(
-      costLimitPlugin(),
-      maxTokensPlugin(),
-      maxDepthPlugin(),
-      maxDirectivesPlugin(),
-      maxAliasesPlugin(),
-    );
-  }
-  if (options.maskErrors) {
-    plugins.push(useMaskedErrors());
-  }
-  if (options.metrics) {
-    plugins.push(usePrometheus(options.metrics));
-  }
-  if (options.readiness) {
-    plugins.push(useReadinessCheck(options.readiness));
-  }
-  if (options.responseCache) {
-    const { session, ttl } = options.responseCache;
-    let cache;
-    if (options.responseCache.cache) {
-      cache = createRedisCache({ redis: options.responseCache.cache })
-    }
-    plugins.push(useResponseCache({
-      session,
-      ttl,
-      cache,
-    }));
-  }
-  if (options.tracing) {
-    const { tracingOptions, tracingProvider } = options.tracing;
-    plugins.push(useOpenTelemetry(tracingOptions, tracingProvider));
-  }
+/**
+ * Builds a GraphQL-Yoga application hosted by uWebsockets
+ * @param {Object} serverOptions 
+ * @param {GraphQLSchema} serverOptions.schema - The schema to serve
+ * @param {ServerOptions} serverOptions.options - The options for the GraphQL server
+ * @returns A uWebsockets application with http and websocket connections
+ * @example
+ * type AppContext = {
+ *   user: string
+ * }
+ * const schema = buildSchema();
+ * const { app } = buildGraphQLServer<AppContext>({
+ *   schema
+ * });
+ * app.listen(4000, () => {
+ *  console.log(`🚀 GraphQL server ready at http://localhost:4000`);
+ * });
+ */
+export function buildGraphQLServer<AppContext extends BaseContext>(schema: GraphQLSchema, options: ServerOptions<AppContext>) {
+  const plugins: (YogaPlugin)[] = initialisePlugins<AppContext>(options);
 
   const yoga = createYoga<ServerContext>({
     schema,
@@ -175,10 +147,49 @@ export function buildGraphQLServer<AppContext extends BaseContext>(serverOptions
     }
   })
 
-  const graphqlApp = App()
+  const app = App()
     .addServerName(hostname(), {})
     .any('/*', yoga)
     .ws(yoga.graphqlEndpoint, wsHandler);
 
-  return { graphqlApp };
+  return { app };
 }
+
+function initialisePlugins<AppContext extends BaseContext>(options: ServerOptions<AppContext>) {
+  const plugins: (YogaPlugin)[] = [useDeferStream()];
+  if (options.disableIntrospection) {
+    plugins.push(useDisableIntrospection());
+  }
+  if (options.enableGraphQLArmor) {
+    const armor = new EnvelopArmor();
+    const protection = armor.protect();
+    plugins.push(protection.plugins);
+  }
+  if (options.maskErrors) {
+    plugins.push(useMaskedErrors());
+  }
+  if (options.metrics) {
+    plugins.push(usePrometheus(options.metrics));
+  }
+  if (options.readiness) {
+    plugins.push(useReadinessCheck(options.readiness));
+  }
+  if (options.responseCache) {
+    const { session, ttl } = options.responseCache;
+    let cache;
+    if (options.responseCache.cache) {
+      cache = createRedisCache({ redis: options.responseCache.cache });
+    }
+    plugins.push(useResponseCache({
+      session,
+      ttl,
+      cache,
+    }));
+  }
+  if (options.tracing) {
+    const { tracingOptions, tracingProvider } = options.tracing;
+    plugins.push(useOpenTelemetry(tracingOptions, tracingProvider));
+  }
+  return plugins;
+}
+

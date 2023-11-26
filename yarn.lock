@@ -1366,7 +1366,16 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.19.7.tgz#02c4446f802706098d8e6ee70cf2b7aba96ded0b"
   integrity sha512-gRaP2sk6hc98N734luX4VpF318l3w+ofrtTu9j5L8EQXF+FzQKV6alCOHMVoJJHvVK/mGbwBXfOL1HETQu9IGQ==
 
-"@escape.tech/graphql-armor-cost-limit@^2.1.0":
+"@escape.tech/graphql-armor-block-field-suggestions@2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor-block-field-suggestions/-/graphql-armor-block-field-suggestions-2.1.0.tgz#100a24ad5e5f672273c6bf795f8ca9983dbe9214"
+  integrity sha512-Sna+jK02oUDJMWSfA7ica69HdtBroP3VakeMUK0+QgWlAEBEphT+SzKGDX5vn6sS7sAsEoY50gUAIgtTG+2qVw==
+  dependencies:
+    graphql "^16.0.0"
+  optionalDependencies:
+    "@envelop/core" "^4.0.0"
+
+"@escape.tech/graphql-armor-cost-limit@2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor-cost-limit/-/graphql-armor-cost-limit-2.1.0.tgz#dace6ab7808509c228446b78adbe5d108383ddc7"
   integrity sha512-zejjLm3vn4MQDpXRaPGXclo1Tq1lc93Ltoh3UoqUDiFV29ZUAnSnuuEw/AdbkK+YFrSIfZYMAGDV8AZ2Xz76RQ==
@@ -1376,7 +1385,7 @@
     "@envelop/core" "^4.0.0"
     "@escape.tech/graphql-armor-types" "0.5.0"
 
-"@escape.tech/graphql-armor-max-aliases@^2.2.0":
+"@escape.tech/graphql-armor-max-aliases@2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor-max-aliases/-/graphql-armor-max-aliases-2.2.0.tgz#05f40d5a89085152df6bfc9592a00d82ac2f3c48"
   integrity sha512-DzQfMtzwW9SZehj+yUsQe1r7psr7E32W/JuPs+tKAlc4zejCaEuVTsPesD5HwfcNPvInkPNmAVWiMOk2bmLp8A==
@@ -1386,7 +1395,7 @@
     "@envelop/core" "^4.0.0"
     "@escape.tech/graphql-armor-types" "0.5.0"
 
-"@escape.tech/graphql-armor-max-depth@^2.2.0":
+"@escape.tech/graphql-armor-max-depth@2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor-max-depth/-/graphql-armor-max-depth-2.2.0.tgz#415402a72c714b960106655be12fd5dc568f2805"
   integrity sha512-v0z2yelQL614mYFpYL/iRkieq/7H2XKbvJ6RvbGMFFSqo3eSIz8fyX0f6pyswR7myQxki4ur0MFxSn8S5jjfqw==
@@ -1396,7 +1405,7 @@
     "@envelop/core" "^4.0.0"
     "@escape.tech/graphql-armor-types" "0.5.0"
 
-"@escape.tech/graphql-armor-max-directives@^2.1.0":
+"@escape.tech/graphql-armor-max-directives@2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor-max-directives/-/graphql-armor-max-directives-2.1.0.tgz#d956db28e86b7fbfa3e5ff8492dbfdc5f23912dc"
   integrity sha512-0OuvWBbOVdphyLPafqTknM4EIrFsGHjv9DcSw8mM7Ol0kKLwYG7tGuBmEzwopRntkqW3utID5tMtf/B6px/Eyw==
@@ -1406,7 +1415,7 @@
     "@envelop/core" "^4.0.0"
     "@escape.tech/graphql-armor-types" "0.5.0"
 
-"@escape.tech/graphql-armor-max-tokens@^2.2.0":
+"@escape.tech/graphql-armor-max-tokens@2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor-max-tokens/-/graphql-armor-max-tokens-2.2.0.tgz#9672fb32dc83236662f004ba16c8fc7e0ecf2827"
   integrity sha512-s6IBS8R4fxQ9cVX1USf4dUOWEDbVVrlcGmVOuTCyW1LnpFJQ5vWCs0n93Lsw2ge/MlRIkZEtGuiXdr0YmLU4Pg==
@@ -1421,6 +1430,19 @@
   resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor-types/-/graphql-armor-types-0.5.0.tgz#bc8452443fef533b118a9e807782f5da95780148"
   integrity sha512-a7KMhb1qVHFFWw4bvGYQI637YaIZRozbfc+Fj1Vv/pwnTCJOzOgnvKO8+WBXJsFFGJ2Kj+fRORmSpz7J+lJF1w==
   dependencies:
+    graphql "^16.0.0"
+
+"@escape.tech/graphql-armor@^2.3.2":
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor/-/graphql-armor-2.3.2.tgz#8f68b7db7b7c5e5536e7a34a7c281e9d181ce665"
+  integrity sha512-TNlHu2BjyJN5sTaXIaCj8AYNyEfjnvAcQI1ywiSsI8pa0ndoVEmQXbOHxCUUwAtn7tFTV/GmS1NXOeWIk7Vq8g==
+  dependencies:
+    "@escape.tech/graphql-armor-block-field-suggestions" "2.1.0"
+    "@escape.tech/graphql-armor-cost-limit" "2.1.0"
+    "@escape.tech/graphql-armor-max-aliases" "2.2.0"
+    "@escape.tech/graphql-armor-max-depth" "2.2.0"
+    "@escape.tech/graphql-armor-max-directives" "2.1.0"
+    "@escape.tech/graphql-armor-max-tokens" "2.2.0"
     graphql "^16.0.0"
 
 "@eslint-community/eslint-utils@^4.2.0", "@eslint-community/eslint-utils@^4.4.0":

@@ -15,9 +15,9 @@ export function buildMetricsServer(register: Registry = defaultRegister) {
       return next();
     }
   };
-  const metricsApp = new Koa();
+  const app = new Koa();
 
-  metricsApp.use(metricsMiddleware);
+  app.use(metricsMiddleware);
 
-  return { metricsApp, register };
+  return { app, register };
 }
