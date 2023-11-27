@@ -18,13 +18,17 @@
               }
             ]
           }
-        ]
+        ],
+        "eol-last": "error",
       }
     },
     {
       "files": ["*.ts", "*.tsx"],
       "extends": ["plugin:@nx/typescript"],
-      "rules": {}
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/no-floating-promises": "warn"
+      }
     },
     {
       "files": ["*.js", "*.jsx"],

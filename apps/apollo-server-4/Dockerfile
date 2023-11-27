@@ -17,8 +17,4 @@ RUN addgroup --system apollo-server-4 && \
 COPY dist/apps/apollo-server-4 apollo-server-4
 RUN chown -R apollo-server-4:apollo-server-4 .
 
-# You can remove this install step if you build with `--bundle` option.
-# The bundled output will include external dependencies.
-RUN npm --prefix apollo-server-4 --omit=dev -f install
-
 CMD [ "node", "apollo-server-4" ]
